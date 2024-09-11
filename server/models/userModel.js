@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     minLength: 10,
     maxLength: 10,
   },
+  password: {
+    type: String,
+    required: true,
+    minLength: 6,
+  },
   address: {
     type: String,
     minLength: 5,
@@ -36,7 +41,7 @@ const userSchema = new mongoose.Schema({
     default: "user",
   },
   resetPasswordToken: String,
-  resetPAsswordExpire: Date,
+  resetPasswordExpire: Date,
 });
 
 userSchema.pre("save", async function (next) {
@@ -56,7 +61,7 @@ userSchema.methods.getJWT = function () {
   });
 };
 
-userSchema.methods.resetPasswordToken = async function () {
+userSchema.methods.getResetPasswordToken = async function () {
   const resetToken = uuid();
 
   this.resetPasswordToken = await bcrypt.hash(resetToken, 10);

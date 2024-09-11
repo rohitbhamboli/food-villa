@@ -6,7 +6,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET,
 });
 
-export const uploadCloudinary = async function (file, folder) {
+const uploadCloudinary = async function (file, folder) {
   // if(!file){
   //     res.status()
   // }
@@ -28,3 +28,5 @@ export const uploadCloudinary = async function (file, folder) {
     res.status(500).json({ message: "Error from Cloudinary", error });
   }
 };
+
+export { uploadCloudinary };

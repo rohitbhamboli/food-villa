@@ -45,20 +45,14 @@ function RegisterForm() {
         placeholder="Confirm Password"
         required
       />
-      <span className="flex justify-center items-center my-2">
-        <input
-          className="mr-2 transform scale-110 focus:outline-none bg-primary"
-          type="checkbox"
-          name="terms"
-          id="terms"
-        />
-        <label
-          className="text-lg lg:text-sm cursor-pointer select-none"
-          htmlFor="terms"
-        >
-          I accept Terms & Conditions
-        </label>
-      </span>
+      <input
+        className="w-full my-3 border-b-2 focus:outline-none file:bg-gray-200 file:border-none file:rounded-full file:text-primary"
+        type="file"
+        accept="image/*"
+        name="avatar"
+        id="avatar"
+        placeholder="Avatar"
+      />
       <button type="submit" className="btn w-full mt-2">
         Register
       </button>
