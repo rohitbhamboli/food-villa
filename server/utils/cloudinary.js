@@ -1,15 +1,12 @@
 import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_SECRET,
-});
+const uploadCloudinary = async (file, folder) => {
+  if (!file) {
+    console.log("No file provided");
+    return null;
+  }
 
-const uploadCloudinary = async function (file, folder) {
-  // if(!file){
-  //     res.status()
-  // }
   try {
     const result = await cloudinary.uploader.upload(file, {
       folder,
@@ -17,15 +14,17 @@ const uploadCloudinary = async function (file, folder) {
         {
           width: 500,
           height: 500,
-          aspect_ratio: 1.0,
-          crop: scale,
+          crop: "fill",
+          aspect_ratio: "1.0",
         },
       ],
     });
-
+    console.log("File uploaded successfully.");
+    fs.unlinkSync(file);
     return result;
-  } catch (error) {
-    res.status(500).json({ message: "Error from Cloudinary", error });
+  } catch (e) {
+    console.log("Error while uploading to cloudinary", e);
+    return null;
   }
 };
 

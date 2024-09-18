@@ -1,6 +1,8 @@
-import React from "react";
+// eslint-disable-next-line
+import React, { useState } from "react";
 
 function RegisterForm() {
+  // const {}
   return (
     <form className="p-3 w-11/12 mx-auto flex flex-col justify-evenly items-start">
       <input
@@ -53,7 +55,11 @@ function RegisterForm() {
         id="avatar"
         placeholder="Avatar"
       />
-      <button type="submit" className="btn w-full mt-2">
+      <button
+        type="submit"
+        className="btn w-full mt-2"
+        // onClick={handleRegister}
+      >
         Register
       </button>
     </form>

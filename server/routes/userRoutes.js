@@ -1,10 +1,12 @@
 import express from "express";
 const router = express.Router();
-import { userRegistration } from "../controllers/userControllers.js";
+import { upload } from "../middleware/multer.js";
+import { userRegistration, getUsers } from "../controllers/userControllers.js";
 
 // router.get("/profile", getUserProfile);
-// router.get("/allusers", getAllUsers);
-router.post("/register", userRegistration);
+router.get("/getusers", getUsers);
+
+router.post("/register", upload.single("avatar"), userRegistration);
 // router.post("/login", userLogin);
 
 export default router;

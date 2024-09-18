@@ -75,26 +75,6 @@ function Login() {
             <div className="w-1/2">
               <RegisterForm />
             </div>
-
-            {/* ---------removes animation but disable user interaction---------- */}
-            {/* <div
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{ width: "200%" }}
-        > */}
-            {/* <div
-            className={`w-1/2 transition-transform duration-500 ${
-              loginTab ? "block" : "hidden"
-            }`}
-          >
-            <LoginForm />
-          </div>
-          <div
-            className={`w-1/2 transition-transform duration-500 ${
-              loginTab ? "hidden" : "block"
-            }`}
-          >
-            <RegisterForm />
-          </div> */}
           </div>
         </div>
 

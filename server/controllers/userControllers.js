@@ -10,9 +10,16 @@ const userRegistration = async (req, res) => {
       return res.status(500).json({ message: "Passwords did not match" });
     }
 
-    const myUpload = uploadCloudinary(avatar.path, "avatars");
-    if (!myUpload) {
-      return res.status(500).json({ message: "Error on avatar Upload" });
+    let avatarUrl =
+      "https://res.cloudinary.com/dejnglyee/image/upload/v1726296193/avatars/hs4x6jj1mhzgavqnpj2o.png";
+
+    if (avatar) {
+      const myUpload = await uploadCloudinary(avatar.path, "avatars");
+      if (myUpload) {
+        avatarUrl = myUpload.secure_url;
+      } else {
+        return res.status(500).json({ message: "Error on avatar upload" });
+      }
     }
 
     const newUser = await User.create({
@@ -20,7 +27,7 @@ const userRegistration = async (req, res) => {
       email,
       phone,
       password,
-      avatar: myUpload.url,
+      avatar: avatarUrl,
     });
     return res.status(201).json({ message: "Registration Success", newUser });
   } catch (error) {
@@ -28,4 +35,13 @@ const userRegistration = async (req, res) => {
   }
 };
 
-export { userRegistration };
+const getUsers = async (req, res) => {
+  const users = {
+    name: "Rohit",
+    email: "rs30328102@gmail.com",
+    phone: 8930328102,
+  };
+  return res.status(200).json({ users });
+};
+
+export { userRegistration, getUsers };
