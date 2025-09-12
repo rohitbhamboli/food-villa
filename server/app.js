@@ -8,6 +8,7 @@ import { v2 as cloudinary } from "cloudinary";
 
 import connect from "./config/connection.js";
 import user from "./routes/userRoutes.js";
+import product from "./routes/productRoutes.js";
 
 const port = process.env.PORT;
 connect();
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/v1/user", user);
+app.use("/api/v1", product);
 
 app.get("/", (req, res) => {
   res.send("Hello World from Server....");

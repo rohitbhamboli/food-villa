@@ -4,7 +4,11 @@ import Footer from "./Footer.js";
 import hero from "../images/hero-img.png";
 import specialMenu from "./Resources/SpecialMenu.js";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 function Main() {
+  const { isAuthenticated } = useSelector((state) => state.user);
+
   return (
     <>
       <Navbar />
@@ -24,9 +28,11 @@ function Main() {
               <NavLink className="btn" to="/menu">
                 Browse Menu
               </NavLink>
-              <NavLink className="btn ml-5 lg:ml-10" to="/login">
-                Log in
-              </NavLink>
+              {!isAuthenticated && (
+                <NavLink className="btn ml-5 lg:ml-10" to="/login">
+                  Log in
+                </NavLink>
+              )}
             </span>
           </div>
           <div className="hidden lg:flex justify-center items-center">

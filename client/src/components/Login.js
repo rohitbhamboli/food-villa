@@ -1,20 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import LoginForm from "./LoginForm";
+import { useDispatch, useSelector } from "react-redux";
+import { clearErrors } from "../actions/userActions";
 import RegisterForm from "./RegisterForm";
-import Wallpaper1 from "../images/png-img.png";
-import Wallpaper2 from "../images/chef-png.png";
 import Footer from "./Footer";
+const Wallpaper1 = "/png-img.png";
+const Wallpaper2 = "/chef-png.png";
 
 function Login() {
-  const [loginTab, setLoginTab] = useState(true);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialForm = queryParams.get("form");
+  const dispatch = useDispatch();
+  const { error: rawError, isAuthenticated } = useSelector(
+    (state) => state.user
+  );
+
+  // Filter out the "Please login to access this resource" error
+  const error =
+    rawError === "Please login to access this resource" ? null : rawError;
+
+  const [loginTab, setLoginTab] = useState(initialForm !== "register");
 
   const handleLoginToggle = () => {
     setLoginTab(true);
+    dispatch(clearErrors()); // Clear errors when switching tabs
   };
   const handleRegisterToggle = () => {
     setLoginTab(false);
+    dispatch(clearErrors()); // Clear errors when switching tabs
   };
+
+  // Clear errors when component mounts or unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearErrors());
+    };
+  }, [dispatch]);
   return (
     <>
       <Navbar />
@@ -70,10 +94,18 @@ function Login() {
             style={{ width: "200%" }}
           >
             <div className="w-1/2">
-              <LoginForm />
+              <LoginForm
+                error={error}
+                isAuthenticated={isAuthenticated}
+                clearErrors={() => dispatch(clearErrors())}
+              />
             </div>
             <div className="w-1/2">
-              <RegisterForm />
+              <RegisterForm
+                error={error}
+                isAuthenticated={isAuthenticated}
+                clearErrors={() => dispatch(clearErrors())}
+              />
             </div>
           </div>
         </div>

@@ -1,28 +1,26 @@
-import { configureStore, combineReducers, applyMiddleware } from "redux";
+import { createStore, combineReducers, applyMiddleware } from "redux";
 import { composeWithDevTools } from "@redux-devtools/extension";
-import thunk from "redux-thunk";
+import { thunk } from "redux-thunk";
+import { userReducer } from "./reducers/userReducer";
+import { cartReducer } from "./reducers/cartReducer";
+import { productsReducer, productDetailsReducer } from "./reducers/productReducer";
 
-let initialState = {
-  cart: {
-    cartItems: localStorage.getItem("cartItems")
-      ? JSON.parse(localStorage.getItem("cartItems"))
-      : [],
-    shippingInfo: localStorage.getItem("shippingInfo")
-      ? JSON.parse(localStorage.getItem("shippingInfo"))
-      : {},
-  },
-  user: localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : {},
-  isLogin: false,
-  loading: false,
-};
+// Combine all reducers into a single root reducer
+const reducer = combineReducers({
+  user: userReducer,
+  cart: cartReducer,
+  products: productsReducer,
+  productDetails: productDetailsReducer,
+});
 
-const reducer = combineReducers({});
+// Define the initial state. Reducers will handle their own initial state.
+let initialState = {};
 
+// Define the middleware to be used by Redux
 const middleware = [thunk];
 
-const store = configureStore(
+// Create the Redux store
+const store = createStore(
   reducer,
   initialState,
   composeWithDevTools(applyMiddleware(...middleware))

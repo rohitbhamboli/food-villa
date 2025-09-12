@@ -18,7 +18,7 @@ function About() {
             <span className="text-white my-5 text-3xl md:text-4xl font-header">
               Welcome to
             </span>
-            <span className="text-white my-5 text-6xl md:text-7xl lg:text-8xl font-about md:font-montez">
+            <span className="text-white my-5 text-6xl md:text-7xl lg:text-8xl f`ont-about md:font-montez">
               Food Villa
             </span>
           </h1>

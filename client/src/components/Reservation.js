@@ -42,6 +42,8 @@ function Reservation() {
             <select
               name="size"
               id="size"
+              value={size}
+              onChange={handleSizeChange}
               className="bg-white w-full my-3 border-b-2 focus:outline-none"
             >
               {size === "" && (

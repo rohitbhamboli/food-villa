@@ -1,3 +1,4 @@
+// Import all user-related action types
 import {
   LOGIN_REQUEST,
   LOGIN_FAIL,
@@ -10,64 +11,62 @@ import {
   LOAD_USER_FAIL,
   LOGOUT_SUCCESS,
   LOGOUT_FAIL,
-  UPDATE_PROFILE_REQUEST,
-  UPDATE_PROFILE_SUCCESS,
-  UPDATE_PROFILE_FAIL,
-  UPDATE_PROFILE_RESET,
-  UPDATE_PASSWORD_REQUEST,
-  UPDATE_PASSWORD_SUCCESS,
-  UPDATE_PASSWORD_RESET,
-  UPDATE_PASSWORD_FAIL,
-  FORGOT_PASSWORD_REQUEST,
-  FORGOT_PASSWORD_SUCCESS,
-  FORGOT_PASSWORD_FAIL,
-  RESET_PASSWORD_REQUEST,
-  RESET_PASSWORD_SUCCESS,
-  RESET_PASSWORD_FAIL,
-  ALL_USERS_REQUEST,
-  ALL_USERS_SUCCESS,
-  ALL_USERS_FAIL,
-  DELETE_USER_REQUEST,
-  DELETE_USER_SUCCESS,
-  DELETE_USER_FAIL,
-  DELETE_USER_RESET,
-  UPDATE_USER_REQUEST,
-  UPDATE_USER_SUCCESS,
-  UPDATE_USER_FAIL,
-  UPDATE_USER_RESET,
-  USER_DETAILS_REQUEST,
-  USER_DETAILS_SUCCESS,
-  USER_DETAILS_FAIL,
   CLEAR_ERRORS,
 } from "../constants/userConstants";
 
-export const userReducer = (state, action) => {
+// Define the initial state for the user reducer
+
+// Retrieve user data from localStorage to persist session
+const storedUser = localStorage.getItem("user");
+
+const initialState = {
+  // Safely parse the user from localStorage.
+  // Checks if storedUser exists and is not the string "undefined" before parsing.
+  user:
+    storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null,
+  loading: false,
+  // Set initial authentication status based on the presence of a valid user in localStorage
+  isAuthenticated: storedUser && storedUser !== "undefined" ? true : false,
+  error: null,
+};
+
+// Define the user reducer function
+export const userReducer = (state = initialState, action) => {
   switch (action.type) {
     case LOGIN_REQUEST:
     case REGISTER_USER_REQUEST:
     case LOAD_USER_REQUEST:
+      // Set loading to true when a login, register, or load user request begins
       return {
+        ...state,
         loading: true,
-        isLogin: false,
+        isAuthenticated: false,
       };
 
     case LOGIN_SUCCESS:
     case REGISTER_USER_SUCCESS:
     case LOAD_USER_SUCCESS:
+      localStorage.setItem("user", JSON.stringify(action.payload));
+      // On successful login, registration, or user load, update the state
       return {
         ...state,
         loading: false,
         isAuthenticated: true,
         user: action.payload,
       };
+
     case LOGOUT_SUCCESS:
+      localStorage.removeItem("user");
+      // On successful logout, clear user data and set isAuthenticated to false
       return {
         loading: false,
         user: null,
         isAuthenticated: false,
       };
+
     case LOGIN_FAIL:
     case REGISTER_USER_FAIL:
+      // On failed login or registration, update the state with the error
       return {
         ...state,
         loading: false,
@@ -77,6 +76,7 @@ export const userReducer = (state, action) => {
       };
 
     case LOAD_USER_FAIL:
+      // On failed user load, update the state
       return {
         loading: false,
         isAuthenticated: false,
@@ -85,6 +85,7 @@ export const userReducer = (state, action) => {
       };
 
     case LOGOUT_FAIL:
+      // On failed logout, update the state with the error
       return {
         ...state,
         loading: false,
@@ -92,12 +93,14 @@ export const userReducer = (state, action) => {
       };
 
     case CLEAR_ERRORS:
+      // Clear any errors in the state
       return {
         ...state,
         error: null,
       };
 
     default:
+      // Return the current state for any other actions
       return state;
   }
 };
