@@ -17,11 +17,26 @@ module.exports = {
       },
       animation: {
         "bounce-slow": "bounce-slow 3s linear infinite",
+        "fade-in": "fade-in 0.5s ease-out forwards",
+        "slide-down": "slide-down 0.5s ease-out forwards",
+        "scale-in": "scale-in 0.3s ease-out forwards",
       },
       keyframes: {
         "bounce-slow": {
           "0%, 100%": { transform: "translateY(-15px)" },
           "50%": { transform: "translateY(0)" },
+        },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "slide-down": {
+          "0%": { transform: "translateY(-20px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        "scale-in": {
+          "0%": { transform: "scale(0.9)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
         },
       },
     },

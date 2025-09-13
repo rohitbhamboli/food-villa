@@ -13,15 +13,67 @@ const hashOtp = async (otp) => {
   return await bcrypt.hash(otp, 10);
 };
 
-const userRegistration = async (req, res) => {
+const sendOtp = async (req, res) => {
   try {
-    const { name, email, phone, password, cpassword } = req.body;
+    const { email } = req.body;
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists." });
+    }
+
+    // Generate Email OTP
+    const emailOtp = generateOtp();
+    const hashedEmailOtp = await hashOtp(emailOtp);
+    const otpExpire = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+
+    // Create a temporary user object to store OTP
+    const tempUser = {
+      emailOtp: hashedEmailOtp,
+      emailOtpExpire: otpExpire,
+    };
+
+    // Send Email OTP
+    const message = `Your Food Villa email verification OTP is ${emailOtp}. It is valid for 10 minutes.`;
+    try {
+      await sendEmail({
+        email: email,
+        subject: "Food Villa Email Verification OTP",
+        message,
+      });
+      res.status(200).json({
+        success: true,
+        message: `Email verification OTP sent to ${email}. Please verify your email.`,
+        tempUser,
+      });
+    } catch (emailError) {
+      return res.status(500).json({
+        message: "Error sending email verification OTP. Please try again.",
+        error: emailError.message,
+      });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error in sending OTP", error: error.message });
+  }
+};
+
+const verifyOtpAndRegister = async (req, res) => {
+  try {
+    const { name, email, phone, password, cpassword, otp, tempUser } = req.body;
+    console.log(req.body);
     const avatar = req.file;
 
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User with this email already exists." });
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists." });
     }
 
     if (password !== cpassword) {
@@ -40,46 +92,38 @@ const userRegistration = async (req, res) => {
       }
     }
 
-    // Generate Email OTP
-    const emailOtp = generateOtp();
-    const hashedEmailOtp = await hashOtp(emailOtp);
-    const otpExpire = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+    // Verify OTP
+    const parsedTempUser = JSON.parse(tempUser);
+    const isOtpMatched = await bcrypt.compare(otp, parsedTempUser.emailOtp);
 
-    // Create user with email OTP and isVerified: false
+    if (!isOtpMatched || parsedTempUser.emailOtpExpire < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired email OTP." });
+    }
+
+    // Create user
     user = await User.create({
       name,
       email,
       phone,
       password, // Password will be hashed by pre-save hook in userModel
       avatar: avatarUrl,
-      emailOtp: hashedEmailOtp,
-      emailOtpExpire: otpExpire,
-      isVerified: false, // User is not verified until email OTP is confirmed
     });
 
-    // Send Email OTP
-    const message = `Your Food Villa email verification OTP is ${emailOtp}. It is valid for 10 minutes.`;
-    try {
-      await sendEmail({
-        email: user.email,
-        subject: "Food Villa Email Verification OTP",
-        message,
-      });
-      res.status(200).json({
-        success: true,
-        message: `Email verification OTP sent to ${user.email}. Please verify your email.`, 
-        userId: user._id,
-      });
-    } catch (emailError) {
-      // If email sending fails, remove the user to prevent unverified accounts
-      await User.findByIdAndDelete(user._id);
-      return res.status(500).json({
-        message: "Error sending email verification OTP. Please try again.",
-        error: emailError.message,
-      });
-    }
+    const token = user.getJWT();
+
+    res
+      .status(200)
+      .cookie("token", token, {
+        expires: new Date(
+          Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+        ),
+        httpOnly: true,
+      })
+      .json({ success: true, user, token });
   } catch (error) {
-    return res.status(500).json({ message: "Error in registration", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error in registration", error: error.message });
   }
 };
 
@@ -97,11 +141,6 @@ const userLogin = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    // Check if user is verified
-    if (!user.isVerified) {
-      return res.status(401).json({ message: "Please verify your email first." });
     }
 
     const isPasswordMatched = await user.comparePassword(password);
@@ -159,48 +198,11 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-const verifyEmailOtp = async (req, res) => {
-  try {
-    const { email, emailOtp } = req.body;
-
-    const user = await User.findOne({ email }).select("+emailOtp +emailOtpExpire");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ message: "Email already verified." });
-    }
-
-    // Check email OTP
-    const isEmailOtpMatched = await bcrypt.compare(emailOtp, user.emailOtp);
-
-    if (!isEmailOtpMatched || user.emailOtpExpire < Date.now()) {
-      return res.status(400).json({ message: "Invalid or expired email OTP." });
-    }
-
-    // If OTP is valid, mark user as verified and clear OTP fields
-    user.isVerified = true;
-    user.emailOtp = undefined;
-    user.emailOtpExpire = undefined;
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Email verified successfully! You can now log in.",
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error during email OTP verification", error: error.message });
-  }
-};
-
 export {
-  userRegistration,
+  sendOtp,
+  verifyOtpAndRegister,
   getUsers,
   userLogin,
   userLogout,
   getUserProfile,
-  verifyEmailOtp, // Export the new email verification function
 };

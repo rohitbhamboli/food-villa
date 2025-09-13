@@ -11,6 +11,12 @@ import {
   LOAD_USER_FAIL,
   LOGOUT_SUCCESS,
   LOGOUT_FAIL,
+  SEND_OTP_REQUEST,
+  SEND_OTP_SUCCESS,
+  SEND_OTP_FAIL,
+  VERIFY_OTP_REQUEST,
+  VERIFY_OTP_SUCCESS,
+  VERIFY_OTP_FAIL,
   CLEAR_ERRORS,
 } from "../constants/userConstants";
 
@@ -40,7 +46,11 @@ export const register = (userData) => async (dispatch) => {
 
     const config = { headers: { "Content-Type": "multipart/form-data" } };
 
-    const { data } = await axios.post(`/api/v1/user/register`, userData, config);
+    const { data } = await axios.post(
+      `/api/v1/user/register`,
+      userData,
+      config
+    );
 
     dispatch({ type: REGISTER_USER_SUCCESS, payload: data.user });
   } catch (error) {
@@ -51,7 +61,45 @@ export const register = (userData) => async (dispatch) => {
   }
 };
 
-// Load User: Fetches user data if a token exists. 
+// send otp
+export const sendOtp = (email) => async (dispatch) => {
+  try {
+    dispatch({ type: SEND_OTP_REQUEST });
+
+    const config = { headers: { "Content-Type": "application/json" } };
+
+    const { data } = await axios.post(
+      `/api/v1/user/send-otp`,
+      { email },
+      config
+    );
+
+    dispatch({ type: SEND_OTP_SUCCESS, payload: data });
+  } catch (error) {
+    dispatch({ type: SEND_OTP_FAIL, payload: error.response.data.message });
+  }
+};
+
+// verify otp and register
+export const verifyOtpAndRegister = (userData) => async (dispatch) => {
+  try {
+    dispatch({ type: VERIFY_OTP_REQUEST });
+
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+
+    const { data } = await axios.post(
+      `/api/v1/user/verify-otp-and-register`,
+      userData,
+      config
+    );
+
+    dispatch({ type: VERIFY_OTP_SUCCESS, payload: data.user });
+  } catch (error) {
+    dispatch({ type: VERIFY_OTP_FAIL, payload: error.response.data.message });
+  }
+};
+
+// Load User: Fetches user data if a token exists.
 // This is crucial for maintaining the session across page reloads.
 export const loadUser = () => async (dispatch) => {
   try {
